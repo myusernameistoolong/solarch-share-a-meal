@@ -1,6 +1,6 @@
 # Meal Sharing Platform – Microservices Architecture
 
-A microservice-based web application for sharing and discovering meals. Users can offer meals, join others, rate experiences, and receive personalized recommendations — all built with Domain-Driven Design, event-driven communication, and scalability in mind.
+Microservice applications for sharing and discovering meals. Users can offer meals, join others, rate experiences, and receive personalized recommendations — all built with Domain-Driven Design, event-driven communication, and scalability in mind.
 
 > This project was developed as part of a school assignment for a **Solution Architecture** course.
 
@@ -101,6 +101,5 @@ All actions (user joins meal, ratings submitted, etc.) are logged in a centraliz
 
 ### Prerequisites
 - Docker & Docker Compose
-- .NET / Node.js / Java (depending on your stack)
 - RabbitMQ for messaging
 - MongoDB for persistence

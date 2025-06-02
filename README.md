@@ -1,4 +1,4 @@
-# 🍽️ Meal Sharing Platform – Microservices Architecture
+# Meal Sharing Platform – Microservices Architecture
 
 A microservice-based web application for sharing and discovering meals. Users can offer meals, join others, rate experiences, and receive personalized recommendations — all built with Domain-Driven Design, event-driven communication, and scalability in mind.
 

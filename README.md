@@ -10,6 +10,8 @@ Microservice applications for sharing and discovering meals. Users can offer mea
 
 This project implements a distributed system using the **microservices pattern**. Each subdomain is a separate service that communicates asynchronously via **event messaging** (RabbitMQ).
 
+![Screenshot showing historical_ai](images/class_diagram.jpg)
+
 ### 🧩 Microservices
 
 | Service              | Description                                           |

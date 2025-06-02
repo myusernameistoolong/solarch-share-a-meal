@@ -1,0 +1,168 @@
+version: "3.9"
+services:
+# Rabbit Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    volumes:
+      #- ./RabbitMQ/Data:/var/lib/rabbitmq
+      - "./RabbitMQ/Configs:/etc/share-a-meal/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      - RABBITMQ_CONFIG_FILE=/etc/share-a-meal/rabbitmq.conf
+
+# Mongo Database
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+
+#MEAL SERVICE BEGIN
+  meal-mongodb:
+    image: mongo:latest
+    command: mongod --port 27020
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: authpassword
+    ports:
+      - 27020:27020
+    volumes:
+      - mongodb_data_container:/mealdata/db
+
+  rating-mongodb:
+    image: mongo:latest
+    command: mongod --port 27021
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: authpassword
+    ports:
+      - 27021:27021
+    volumes:
+      - mongodb_data_container:/ratingdata/db
+
+  meal-service:
+    build: ./MealService
+    ports:
+      - 3001:3000
+    depends_on:
+      - rabbitmq
+      - meal-mongodb
+    restart: always
+    environment:
+      - MONGO_URL=mongodb://root:authpassword@meal-mongodb:27020
+      - RABBITMQ_URL=amqp://admin:Welkom123@rabbitmq:5672
+
+#AUTH SERVICE BEGIN
+  auth-service:
+    build: ./AuthService
+    ports:
+      - 3000:3000
+    environment:
+      - MONGO_URL=mongodb://root:authpassword@auth-mongodb:27018
+
+  auth-mongodb:
+    image: mongo:latest
+    command: mongod --port 27018
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: authpassword
+    ports:
+      - 27018:27018
+    volumes:
+      - mongodb_data_container:/authdata/db
+
+#NOTIFICATION SERVICE BEGIN
+  notification-service:
+    build: ./NotificationService
+    depends_on:
+      - rabbitmq
+    restart: always
+    environment:
+      - CUSTOMCONNSTR_CLOUDAMQP_URL=amqp://admin:Welkom123@rabbitmq:5672
+      - CUSTOMCONNSTR_EXCHANGE=amq.direct
+
+
+#EVENT SOURCE SERVICE BEGIN
+  event-source-service:
+    build: ./EventSource
+    depends_on:
+      - rabbitmq
+      - meal-mongodb
+    restart: always
+    environment:
+      - MONGO_DB=Share-a-Meal_MealService
+      - MONGO_URL=mongodb://root:authpassword@meal-mongodb:27020
+      - CUSTOMCONNSTR_CLOUDAMQP_URL=amqp://admin:Welkom123@rabbitmq:5672
+      - CUSTOMCONNSTR_EXCHANGE=amq.direct
+
+#LOGGING SERVICE BEGIN
+  logging-service:
+    build: ./LoggingService
+    volumes:
+      - "./LoggingService/Logs:/app/logs"
+    depends_on:
+      - rabbitmq
+    restart: always
+    environment:
+      - CUSTOMCONNSTR_CLOUDAMQP_URL=amqp://admin:Welkom123@rabbitmq:5672
+      - CUSTOMCONNSTR_EXCHANGE=amq.direct
+
+#USER SERVICE BEGIN
+  userService-mongodb:
+    image: mongo:latest
+    command: mongod --port 27019
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: authpassword
+    ports:
+      - 27019:27019
+    volumes:
+      - mongodb_data_container:/userdata/db
+
+  user-service:
+    build: ./UserService
+    ports:
+      - 3100:3100
+    depends_on:
+      - rabbitmq
+    restart: always
+    environment:
+      - MONGO_URL=mongodb://root:authpassword@userService-mongodb:27019
+      - PORT=3100
+      - CUSTOMCONNSTR_CLOUDAMQP_URL=amqp://admin:Welkom123@rabbitmq:5672
+      - CUSTOMCONNSTR_EXCHANGE=amq.direct
+
+  rating-api:
+    build: ./RatingAPI
+    container_name: rating-api
+    depends_on:
+      - rabbitmq
+    restart: always
+    ports:
+        - 4000:4000
+
+  # # Mongo Express Service
+  # mongo-express:
+  #   image: mongo-express:latest
+  #   container_name: mongo-express
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8081:8081
+  #   environment:
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+  #     ME_CONFIG_MONGODB_SERVER: mongodb
+  #     ME_CONFIG_MONGODB_URL: mongodb://root:rootpassword@mongodb:27017/
+  # use the name of the mongo container above for server env var.
+  # In our case this is mongodb
+#volumes:
+#  rabbitmqdata:
+#    external: true
+volumes:
+  mongodb_data_container:

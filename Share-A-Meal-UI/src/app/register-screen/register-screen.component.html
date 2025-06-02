@@ -1,0 +1,31 @@
+<div class="container mt-5">
+
+    <form #settingsForm class="col s12 m9" (ngSubmit)="submitForm(settingsForm)" ngNativeValidate>
+        <div class="form-group">
+          <label for="emailInput">Email address</label>
+          <input name="userEmail" type="email" class="form-control" id="emailInput" aria-describedby="emailHelp" placeholder="Enter email">
+          <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+        </div>
+        <div class="form-group">
+          <label for="fullNameInput">Full Name</label>
+          <input name="fullName" type="text" class="form-control" id="fullNameInput" aria-describedby="fullNameHelp" placeholder="John Do">
+          <small id="fullNameHelp" class="form-text text-muted">Only your firstname will be displayed to the meal participants</small>
+        </div>
+        <div class="form-group">
+          <label for="passwordInput">Password</label>
+          <input name="password" type="password" class="form-control" id="passwordInput" placeholder="Password" [(ngModel)]="password">
+        </div>
+        <div class="form-group">
+          <label for="passwordConfirmInput">Confirm password</label>
+          <input name="passwordConfirm" type="password" class="form-control" id="passwordConfirmInput" placeholder="Password Confirm" [(ngModel)]="passwordConfirm">
+        </div>
+        <div *ngIf="alertMessage != '' && alertMessage != null" class="form-group">
+            <div class="alert alert-danger" role="alert">
+                {{alertMessage}}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+  
+  </div>
